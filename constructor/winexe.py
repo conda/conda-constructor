@@ -88,6 +88,7 @@ def make_nsi(info, dir_path):
     assert py_name == 'python'
     arch = int(info['_platform'].split('-')[1])
 
+    has_readme = bool('readme_file' in info)
     # these appear as __<key>__ in the template, and get escaped
     replace = {
         'NAME': name,
@@ -106,6 +107,8 @@ def make_nsi(info, dir_path):
             join('%LOCALAPPDATA%', 'Continuum', name.lower())
         ),
     }
+    if has_readme:
+        replace['READMEFILE'] = abspath(info.get('readme_file'))
     for key, fn in [('HEADERIMAGE', 'header.bmp'),
                     ('WELCOMEIMAGE', 'welcome.bmp'),
                     ('ICONFILE', 'icon.ico'),
@@ -121,6 +124,7 @@ def make_nsi(info, dir_path):
     ppd = ns_platform(info['_platform'])
     ppd['add_to_path_default'] = info.get('add_to_path_default', None)
     ppd['register_python_default'] = info.get('register_python_default', None)
+    ppd['has_readme'] = has_readme
     data = preprocess(data, ppd)
     data = fill_template(data, replace)
 

@@ -121,6 +121,12 @@ then
 
     echo "
 Welcome to __NAME__ __VERSION__"
+#if has_readme
+    echo "About __NAME__ __VERSION__:"
+    more <<EOF
+__README__
+EOF
+#endif
 #if has_license
     echo -n "
 In order to continue the installation process, please review the license

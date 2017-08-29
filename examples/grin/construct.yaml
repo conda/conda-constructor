@@ -46,6 +46,10 @@ installer_type: pkg                   [osx]
 # the `name`, (optional) `version`, OS and installer type)
 #installer_filename: grin.sh
 
+# an optional file with a readme text, which is shown during the install
+# process
+readme_file: install_readme.txt
+
 # a file with a license text, which is shown during the install process
 license_file: eula.txt
 

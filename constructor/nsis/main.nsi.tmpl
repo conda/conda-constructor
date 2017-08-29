@@ -21,6 +21,10 @@ Unicode "true"
 
 !include "Utils.nsh"
 
+#if has_readme
+!include "MUI_EXTRAPAGES.nsh"
+#endif
+
 !define NAME __NAME__
 !define VERSION __VERSION__
 !define COMPANY __COMPANY__
@@ -94,6 +98,9 @@ BrandingText /TRIMLEFT "${COMPANY}"
 !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipPageIfUACInnerInstance
 !insertmacro MUI_PAGE_WELCOME
 !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipPageIfUACInnerInstance
+#if has_readme
+!insertmacro MUI_PAGE_README __READMEFILE__
+#endif
 !insertmacro MUI_PAGE_LICENSE __LICENSEFILE__
 Page Custom InstModePage_Create InstModePage_Leave
 !define MUI_PAGE_CUSTOMFUNCTION_PRE DisableBackButtonIfUACInnerInstance
@@ -111,6 +118,15 @@ Page Custom mui_AnaCustomOptions_Show
 
 # Language
 !insertmacro MUI_LANGUAGE "English"
+#if has_readme
+# Source:
+# http://nsis.sourceforge.net/Readme_Page_Based_on_MUI_License_Page#Usage_Example
+${ReadmeLanguage} "${LANG_ENGLISH}" \
+    "Read Me" \
+    "Please review the following important information." \
+    "About $(^name):" \
+    "$\n  Click on scrollbar arrows or press Page Down to review the entire text."
+#endif
 
 Function SkipPageIfUACInnerInstance
     ${If} ${UAC_IsInnerInstance}

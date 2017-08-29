@@ -46,9 +46,11 @@ def get_header(tarball, info):
     dist0 = dists[0]
     assert name_dist(dist0) == 'python'
 
+    has_readme = bool('readme_file' in info)
     has_license = bool('license_file' in info)
     ppd = ns_platform(info['_platform'])
     ppd['keep_pkgs'] = bool(info.get('keep_pkgs'))
+    ppd['has_readme'] = has_readme
     ppd['has_license'] = has_license
     for key in 'pre_install', 'post_install':
         ppd['has_%s' % key] = bool(key in info)
@@ -69,6 +71,8 @@ def get_header(tarball, info):
         'INSTALL_COMMANDS': '\n'.join(install_lines),
         'pycache': '__pycache__',
     }
+    if has_readme:
+        replace['README'] = read_ascii_only(info['readme_file'])
     if has_license:
         replace['LICENSE'] = read_ascii_only(info['license_file'])
 
@@ -92,6 +96,8 @@ def create(info):
     preconda.write_files(info, tmp_dir)
     tarball = join(tmp_dir, 'tmp.tar')
     t = tarfile.open(tarball, 'w')
+    if 'readme_file' in info:
+        t.add(info['readme_file'], 'README.txt')
     if 'license_file' in info:
         t.add(info['license_file'], 'LICENSE.txt')
     for fn in preconda.files:

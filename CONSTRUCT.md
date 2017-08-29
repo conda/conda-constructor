@@ -85,6 +85,12 @@ The filename of the installer being created.  A reasonable default filename
 will determined by the `name`, `version`, platform and installer type.
 
 
+`readme_file`:
+----------------
+Path to a readme file, which, if provided, is being displayed by the installer
+during the install process.
+
+
 `license_file`:
 ----------------
 Path to the license file being displayed by the installer during the install

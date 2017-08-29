@@ -100,6 +100,11 @@ The type of the installer being created.  Possible values are "sh", "pkg",
 and "exe".  By default, the type is "sh" on Unix, and "exe" on Windows.
 '''),
 
+    ('readme_file',           False, str, '''
+Path to the readme file being displayed by the installer during the install
+process.
+    '''),
+
     ('license_file',           False, str, '''
 Path to the license file being displayed by the installer during the install
 process.
