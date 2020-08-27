@@ -245,10 +245,11 @@ and a `.bat` file for Windows.
 
 _required:_ no<br/>
 _type:_ string<br/>
-Short description of the "post_install" script to be displayed as label of
-the "Do not run post install script" checkbox in the windows installer.
-If used and not an empty string, the "Do not run post install script"
-checkbox will be displayed with this label.
+A description of the purpose of the supplied post_install script. If this
+string is supplied and non-empty, then the Windows and macOS GUI installers
+will display it along with checkbox to enable or disable the execution of the
+script. If this string is not supplied, it is assumed that the script
+is compulsory and the option to disable it will not be offered.
 
 ## `pre_uninstall`
 
@@ -304,9 +305,9 @@ If `header_image` is not provided, use this text when generating the image
 
 _required:_ no<br/>
 _type:_ boolean<br/>
-Default choice for whether to add the installation to the PATH environment
-variable. The user is still able to change this during interactive
-installation.
+Whether to add the installation to the PATH environment variable. The default
+is true for GUI installers (msi, pkg) and False for shell installers. The user
+is able to change the default during interactive installation.
 
 ## `register_python_default`
 
@@ -315,6 +316,26 @@ _type:_ boolean<br/>
 Default choice for whether to register the installed Python instance as the
 system's default Python. The user is still able to change this during
 interactive installation. (Windows only)
+
+## `installers`
+
+_required:_ no<br/>
+_type:_ dictionary<br/>
+When supplied, `installers` is a dictionary of dictionaries that allows a single
+`construct.yaml` file to describe multiple installers. In this mode, the top-level
+options provide a set of "parent" specifications which are merged which each
+child dictionary in a simple fashion to yield a complete installer specification.
+The merging approach is as follows:
+- For _string_ options, the "parent" spec provides a simple default. If a
+  child spec includes the same key, its value overrides the parent.
+- For _list_ options, the "parent" and "child" lists are _concatenated_ for the
+  final spec. This allows, for instance, the parent to specify a set of
+  base packages to include in all installers.
+- For _dictionary_ options, the "parent" and "child" dictionaries are combined,
+  with any intersecting keys resolved in favor of the child.
+
+In this mode, the name of each installer is given by the dictionary keys in the
+`installers` option, and the `name` field must not be explicitly supplied.
 
 ## `check_path_length`
 

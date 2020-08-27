@@ -11,7 +11,9 @@ from os.path import abspath, basename, expanduser, isdir, isfile, join
 import sys
 
 from .conda_interface import cc_platform
-from .construct import parse as construct_parse, verify as construct_verify
+from .construct import (parse as construct_parse,
+                        verify as construct_verify,
+                        split as construct_split)
 from .fcp import main as fcp_main
 from .install import yield_lines
 from .utils import normalize_path
@@ -75,6 +77,11 @@ def main_build(dir_path, output_dir='.', platform=cc_platform,
     info['_platform'] = platform
     info['_download_dir'] = join(cache_dir, platform)
     info['_conda_exe'] = abspath(conda_exe)
+    for info in construct_split(info):
+        build_single(info, dir_path, output_dir, verbose, dry_run, conda_exe)
+
+
+def build_single(info, dir_path, output_dir, verbose, dry_run, conda_exe):
     set_installer_type(info)
 
     if info['installer_type'] == 'sh':
