@@ -59,6 +59,7 @@ var /global IsDomainUser
 var /global CheckPathLength
 var /global LongPathsEnabled
 var /global InstDirLen
+var /global FakeHome
 
 var /global InstModePage_RadioButton_JustMe
 var /global InstModePage_RadioButton_AllUsers
@@ -866,6 +867,13 @@ Section "Install"
     File /nonfatal /r __INDEX_CACHE__
     File /r __REPODATA_RECORD__
 
+    # See https://github.com/conda/constructor/issues/302
+    StrCpy $FakeHome "$INSTDIR\pkgs\.fake"
+    CreateDirectory "$FakeHome\.conda"
+    System::Call 'kernel32::SetEnvironmentVariable(t,t)i("CONDA_PREFIX", "$FakeHome").r0'
+    System::Call 'kernel32::SetEnvironmentVariable(t,t)i("USERPROFILE", "$FakeHome").r0'
+    CopyFiles /silent /filesonly "$PROFILE\.conda\environments.txt" "$FakeHome\.conda"
+
     System::Call 'kernel32::SetEnvironmentVariable(t,t)i("CONDA_SAFETY_CHECKS", "disabled").r0'
     System::Call 'kernel32::SetEnvironmentVariable(t,t)i("CONDA_EXTRA_SAFETY_CHECKS", "no").r0'
     System::Call 'kernel32::SetEnvironmentVariable(t,t)i("CONDA_CHANNELS", __CHANNELS__).r0'
@@ -884,6 +892,12 @@ Section "Install"
     nsExec::ExecToLog '"$INSTDIR\_conda.exe" install --offline -yp "$INSTDIR" --file "$INSTDIR\pkgs\env.txt"'
     Pop $0
     SetDetailsPrint both
+
+    # See https://github.com/conda/constructor/issues/302
+    CreateDirectory "$PROFILE\.conda"
+    CopyFiles /silent /filesonly "$FakeHome\.conda\environments.txt" "$PROFILE\.conda"
+    System::Call 'kernel32::SetEnvironmentVariable(t,t)i("USERPROFILE", "$PROFILE")".r0'
+    RMDir /r "$FakeHome"
 
     # Cleanup
     SetOutPath "$INSTDIR"

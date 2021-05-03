@@ -475,17 +475,21 @@ MSGS="$PREFIX/.messages.txt"
 touch "$MSGS"
 export FORCE
 
-# original issue report:
-# https://github.com/ContinuumIO/anaconda-issues/issues/11148
-# First try to fix it (this apparently didn't work; QA reported the issue again)
-# https://github.com/conda/conda/pull/9073
-mkdir -p ~/.conda > /dev/null 2>&1
+# See https://github.com/conda/constructor/issues/302
+FAKE_HOME="$PREFIX/pkgs/.fake"
+mkdir -p "$FAKE_HOME/.conda" $HOME/.conda 2>/dev/null
+cp -p $HOME/.conda/environments.txt $FAKE_HOME/.conda/environments.txt 2>/dev/null
 
+HOME="$FAKE_HOME" \
+CONDA_PREFIX="$FAKE_HOME" \
 CONDA_SAFETY_CHECKS=disabled \
 CONDA_EXTRA_SAFETY_CHECKS=no \
 CONDA_CHANNELS=__CHANNELS__ \
 CONDA_PKGS_DIRS="$PREFIX/pkgs" \
 "$CONDA_EXEC" install --offline --file "$PREFIX/pkgs/env.txt" -yp "$PREFIX" || exit 1
+
+cp -p $FAKE_HOME/.conda/environments.txt $HOME/.conda/environments.txt 2>/dev/null
+rm -rf $FAKE_HOME
 
 if [ "$KEEP_PKGS" = "0" ]; then
     rm -fr $PREFIX/pkgs/*.tar.bz2
