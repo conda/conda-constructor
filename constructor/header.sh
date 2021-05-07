@@ -64,7 +64,7 @@ Installs __NAME__ __VERSION__
 "
 
 if which getopt > /dev/null 2>&1; then
-    OPTS=$(getopt bifhkp:sut "$*" 2>/dev/null)
+    OPTS=$(getopt bifhkp:sut "$@" 2>/dev/null)
     if [ ! $? ]; then
         printf "%s\\n" "$USAGE"
         exit 2
@@ -352,13 +352,6 @@ EOF
     fi
 fi # !BATCH
 
-case "$PREFIX" in
-    *\ * )
-        printf "ERROR: Cannot install into directories with spaces\\n" >&2
-        exit 1
-        ;;
-esac
-
 if [ "$FORCE" = "0" ] && [ -e "$PREFIX" ]; then
     printf "ERROR: File or directory already exists: '%s'\\n" "$PREFIX" >&2
     printf "If you want to update an existing installation, use the -u option.\\n" >&2
@@ -366,7 +359,6 @@ if [ "$FORCE" = "0" ] && [ -e "$PREFIX" ]; then
 elif [ "$FORCE" = "1" ] && [ -e "$PREFIX" ]; then
     REINSTALL=1
 fi
-
 
 if ! mkdir -p "$PREFIX"; then
     printf "ERROR: Could not create directory: '%s'\\n" "$PREFIX" >&2
@@ -436,7 +428,7 @@ chmod +x "$CONDA_EXEC"
 
 export TMP_BACKUP="$TMP"
 export TMP=$PREFIX/install_tmp
-mkdir -p $TMP
+mkdir -p "$TMP"
 
 # the second binary payload: the tarball of packages
 printf "Unpacking payload ...\n"
@@ -488,8 +480,8 @@ CONDA_PKGS_DIRS="$PREFIX/pkgs" \
 "$CONDA_EXEC" install --offline --file "$PREFIX/pkgs/env.txt" -yp "$PREFIX" || exit 1
 
 if [ "$KEEP_PKGS" = "0" ]; then
-    rm -fr $PREFIX/pkgs/*.tar.bz2
-    rm -fr $PREFIX/pkgs/*.conda
+    rm -f "$PREFIX/pkgs/*.tar.bz2"
+    rm -f "$PREFIX/pkgs/*.conda"
 fi
 
 __INSTALL_COMMANDS__
@@ -498,14 +490,14 @@ POSTCONDA="$PREFIX/postconda.tar.bz2"
 "$CONDA_EXEC" constructor --prefix "$PREFIX" --extract-tarball < "$POSTCONDA" || exit 1
 rm -f "$POSTCONDA"
 
-rm -f $PREFIX/conda.exe
-rm -f $PREFIX/pkgs/env.txt
+rm -f "$CONDA_EXEC"
+rm -f "$PREFIX/pkgs/env.txt"
 
-rm -rf $PREFIX/install_tmp
+rm -rf "$PREFIX/install_tmp"
 export TMP="$TMP_BACKUP"
 
 #if has_conda
-mkdir -p $PREFIX/envs
+mkdir -p "$PREFIX/envs"
 #endif
 
 #The templating doesn't support nested if statements
@@ -536,7 +528,7 @@ if [ "$KEEP_PKGS" = "0" ]; then
 else
     # Attempt to delete the empty temporary directories in the package cache
     # These are artifacts of the constructor --extract-conda-pkgs
-    find $PREFIX/pkgs -type d -empty -exec rmdir {} \; 2>/dev/null || :
+    find "$PREFIX/pkgs" -type d -empty -exec rmdir {} \; 2>/dev/null || :
 fi
 
 printf "installation finished.\\n"
@@ -589,8 +581,8 @@ if [ "$BATCH" = "0" ]; then
         printf "\\n"
     else
         case $SHELL in
-            *zsh) $PREFIX/bin/conda init zsh ;;
-            *) $PREFIX/bin/conda init ;;
+            *zsh) "$PREFIX/bin/conda" init zsh ;;
+            *) "$PREFIX/bin/conda" init ;;
         esac
     fi
     printf "If you'd prefer that conda's base environment not be activated on startup, \\n"
