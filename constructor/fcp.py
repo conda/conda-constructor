@@ -377,6 +377,10 @@ def main(info, verbose=True, dry_run=False, conda_exe="conda.exe"):
     proxy_servers = conda_context.proxy_servers
     ssl_verify = conda_context.ssl_verify
 
+    for url in channel_urls:
+        if url.startswith('file://') and not any(remap[0] == url for remap in channels_remap):
+            channels_remap = list(channels_remap) + [{'src': url, 'dest': 'local'}]
+
     with env_vars({
         "CONDA_PKGS_DIRS": download_dir,
     }, conda_replace_context_default):

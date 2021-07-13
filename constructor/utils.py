@@ -140,9 +140,10 @@ def get_final_channels(info):
     mapped_channels = []
     for channel in info.get('channels', []):
         url = get_final_url(info, channel)
+        # we handle these by pretending that they come from the local channel
+        #   ($PREFIX/conda-bld by default)
         if url.startswith("file://"):
-            print("WARNING: local channel {} does not have a remap. "
-                  "It will not be included in the installer".format(url))
+            mapped_channels.append('local')
             continue
         mapped_channels.append(url)
     return mapped_channels

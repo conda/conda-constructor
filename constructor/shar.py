@@ -82,6 +82,21 @@ def get_header(conda_exec, tarball, info):
 
     return data
 
+def add_repodata(fn_dict, subdir):
+    """This is used to write local repodata.  Local packages are considered to live
+    in $PREFIX/conda-bld on the destination system."""
+    with open('repodata.json', 'w') as f:
+        json.dump({
+            "info": {
+                "subdir": subdir
+            },
+            "packages": fn_dict['packages'],
+            "packages.conda": fn_dict['packages.conda'],
+            "removed": [],
+            "repodata_version": 1
+        }, f)
+    t.add('repodata.json', '/'.join(('conda-bld', subdir, 'repodata.json')))
+
 
 def create(info, verbose=False):
     tmp_dir_base_path = join(dirname(info['_outpath']), "tmp")
@@ -131,6 +146,32 @@ def create(info, verbose=False):
     for dist in info['_dists']:
         fn = filename_dist(dist)
         t.add(join(info['_download_dir'], fn), 'pkgs/' + fn)
+
+    local_subdir_repodata = {}
+    for url, _ in info['_urls']:
+        if url.startswith('file://'):
+            _, subdir, fn = url.rsplit('/', 2)
+            t.add(join(info['_download_dir'], fn), '/'.join(('conda-bld', subdir, fn)))
+            # load the repodata from JSON and build up the new local repodata from individual entries
+            with open(url.replace('file://', '').replace(fn, 'repodata.json')) as f:
+                repodata = json.load(f)
+                local_dir = local_subdir_repodata.get(subdir, {
+                    'packages': {},
+                    'packages.conda': {},
+                })
+                if fn.endswith('.conda'):
+                    local_dir['packages.conda'][fn] = repodata['packages.conda'][fn]
+                else:
+                    local_dir['packages'][fn] = repodata['packages'][fn]
+                local_subdir_repodata[subdir] = local_dir
+
+    has_noarch = False
+    for subdir, fn_dict in local_subdir_repodata.items():
+        if not has_noarch and subdir == 'noarch':
+            has_noarch = True
+        add_repodata(fn_dict, subdir)
+    if not has_noarch:
+        add_repodata({'packages': {}, 'packages.conda': {}}, 'noarch')
     t.close()
 
     conda_exec = info["_conda_exe"]
